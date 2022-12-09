@@ -73,17 +73,7 @@ int main()
                 {
                     WriteFile(hPipe, "Число введено некорректно", SIZE_BUFFER, &actual_readen, NULL);
                 }
-                //float a = atof(buffer);// преобразует строку в значение типа double
-                //float aa = a * a; // в квадрат
-                //sprintf(message, "%g", aa); // вывод
-                //zero = L"0";
-                //sprintf(b, "%s", buffer);
-                //if (aa == 0 && strcmp(b, zero) != 0)
-                //{
-                //    sprintf(message, "Не корректно введены данные");
-                //}
-                //buffer = &message;
-                //WriteFile(hPipe, buffer, SIZE_BUFFER, &actual_readen, NULL);
+             
             }
 
 
