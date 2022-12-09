@@ -2,12 +2,24 @@
 #include <stdio.h>
 #include <Windows.h>
 #define SIZE_BUFFER 140
+BOOL checkClient(LPSTR str)
+{
+    for (size_t i = 0; *(str + i) != '\0'; i++)
+    {
+        if (*(str + i) < '0' || *(str + i) > '9')
+        {
+            return FALSE;
+        }
+    }
+
+    return TRUE;
+}
 
 int main()
 {
     //сервер создает канал
     system("chcp 1251 > null");
-    HANDLE hNamePipe; //объявление дескриптора канала
+    HANDLE hPipe; //объявление дескриптора канала
     LPSTR lpstPipeName = L"\\\\.\\pipe\\MyPipe"; // переменная, содержащая имя канала   
     LPWSTR buffer = (CHAR*)calloc(SIZE_BUFFER, sizeof(CHAR)); // строковая перменная, в которую будут считаны даные
     char message[SIZE_BUFFER]; // массив симвролов
@@ -18,7 +30,7 @@ int main()
     LPWSTR zero = (CHAR*)calloc(SIZE_BUFFER, sizeof(CHAR));
     while (TRUE)
     {
-        HANDLE hNamePipe = CreateNamedPipe( // создание канала
+        HANDLE hPipe = CreateNamedPipe( // создание канала
             lpstPipeName, // имя канала - путь
             // и принимает и отправляет
             PIPE_ACCESS_DUPLEX, // режм доступа к каналу (односторонний/двусторонний)
@@ -29,26 +41,38 @@ int main()
             INFINITE, // максимальное время ожидания сообщения - ждать до конца
             NULL // указатель на структуру безопасности
         );
-        Connected = ConnectNamedPipe(hNamePipe, NULL); // установка с оединения клиента с каналом
+        Connected = ConnectNamedPipe(hPipe, NULL); // установка с оединения клиента с каналом
         if (Connected) // если клиент подключился
         {
             printf("\nКлиент успешно подключен\n");
 
-            if (ReadFile(hNamePipe, buffer, SIZE_BUFFER, &actual_readen, NULL))
+            if (ReadFile(hPipe, buffer, SIZE_BUFFER, &actual_readen, NULL))
             {
-                // обмен сообщениями
-                printf("\nКлиент пишет: ");
-                printf(buffer);
+                //// обмен сообщениями
+                //printf("\nКлиент пишет: ");
+                //printf(buffer);
 
-                printf("\nСообщение: ");
-                gets(message);
-                buffer = &message;
-                WriteFile(hNamePipe, buffer, SIZE_BUFFER, &actual_readen, NULL);
+                //printf("\nСообщение: ");
+                //gets(message);
+                //buffer = &message;
+                //WriteFile(hPipe, buffer, SIZE_BUFFER, &actual_readen, NULL);
 
                 // возведение в квадрат
-                //printf("\nКлиент пишет: \n");
-                //printf(buffer);// вывод на экран прочитанного сообщения
-                //printf("\n");
+                printf("\nКлиент пишет: \n");
+                printf(buffer);// вывод на экран прочитанного сообщения
+                printf("\n");
+                 
+                if (checkClient(buffer))
+                {
+                    int number = atoi(buffer);
+                    sprintf(message, "%d", number * number);
+                    buffer = &message;
+                    WriteFile(hPipe, buffer, SIZE_BUFFER, NULL, NULL);
+                }
+                else
+                {
+                    WriteFile(hPipe, "Число введено некорректно", SIZE_BUFFER, &actual_readen, NULL);
+                }
                 //float a = atof(buffer);// преобразует строку в значение типа double
                 //float aa = a * a; // в квадрат
                 //sprintf(message, "%g", aa); // вывод
@@ -59,7 +83,7 @@ int main()
                 //    sprintf(message, "Не корректно введены данные");
                 //}
                 //buffer = &message;
-                //WriteFile(hNamePipe, buffer, SIZE_BUFFER, &actual_readen, NULL);
+                //WriteFile(hPipe, buffer, SIZE_BUFFER, &actual_readen, NULL);
             }
 
 
@@ -68,7 +92,7 @@ int main()
         {
             printf("\nКлиент отключился от сервера\n");
         }
-        CloseHandle(hNamePipe); // закрываем канал
+        CloseHandle(hPipe); // закрываем канал
 
     }
 }
